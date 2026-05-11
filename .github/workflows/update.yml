@@ -72,16 +72,28 @@ jobs:
       - name: Schema test against new data
         run: pytest tests/test_output_schema.py -v
 
-      - name: Commit if changed
+      - name: Commit if changed (amend last data commit to avoid history bloat)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add web/data/treemap.json web/data/treemap.pretty.json web/data/_meta.json || true
-          if ! git diff --cached --quiet; then
-            git commit -m "data: KOSPI 200 snapshot $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M KST')"
-            git push
-          else
+          if git diff --cached --quiet; then
             echo "변경사항 없음 — commit 생략"
+            exit 0
+          fi
+          # 마지막 commit이 cron의 data commit이면 amend (history 누적 방지)
+          # 사용자 push와의 충돌 최소화 — cron commit이 1개로 압축됨
+          LAST_MSG=$(git log -1 --pretty=%s)
+          LAST_AUTHOR=$(git log -1 --pretty=%ae)
+          NEW_MSG="data: KOSPI 200 snapshot $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M KST')"
+          if echo "$LAST_MSG" | grep -q "^data: KOSPI 200 snapshot" && [ "$LAST_AUTHOR" = "41898282+github-actions[bot]@users.noreply.github.com" ]; then
+            echo "이전 cron commit을 amend (history 압축)"
+            git commit --amend -m "$NEW_MSG"
+            git push --force-with-lease
+          else
+            echo "사용자 commit 위에 새 cron commit 추가"
+            git commit -m "$NEW_MSG"
+            git push
           fi
 
   notify-failure:
