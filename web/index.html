@@ -650,9 +650,16 @@ function updateHeader(data) {
       const last = new Date(m.last_success_iso);
       const now = new Date();
       const diffMin = Math.round((now - last) / 60000);
-      const hh = String(last.getHours()).padStart(2, "0");
-      const mm = String(last.getMinutes()).padStart(2, "0");
-      const dateStr = (last.getMonth() + 1) + "/" + last.getDate();
+      // KST 강제 변환 (한국 주식 데이터이므로 사용자 timezone 무관하게 한국 시간 표시)
+      const kstFmt = new Intl.DateTimeFormat("ko-KR", {
+        timeZone: "Asia/Seoul",
+        month: "numeric", day: "numeric",
+        hour: "2-digit", minute: "2-digit", hour12: false
+      }).formatToParts(last);
+      const part = (t) => (kstFmt.find(p => p.type === t) || {}).value;
+      const hh = part("hour");
+      const mm = part("minute");
+      const dateStr = part("month") + "/" + part("day");
       let agoStr;
       if (diffMin < 1) agoStr = "방금 갱신";
       else if (diffMin < 60) agoStr = diffMin + "분 전";
