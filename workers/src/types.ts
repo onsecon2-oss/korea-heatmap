@@ -18,6 +18,7 @@ export interface Env {
   GOOGLE_CLIENT_SECRET?: string;
   KAKAO_CLIENT_ID?: string;
   KAKAO_CLIENT_SECRET?: string;
+  GH_DISPATCH_TOKEN?: string;  // update.yml workflow_dispatch 용 GitHub PAT
 }
 
 export interface User {
