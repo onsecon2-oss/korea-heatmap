@@ -15,6 +15,9 @@ import {
 import { handleAuthStart, handleAuthCallback } from "./handlers/oauth";
 import { handleTrackVisit, handleGetVisitCount } from "./handlers/visits";
 import { runSettlement } from "./handlers/settle";
+import { triggerKospiUpdate } from "./lib/dispatch";
+
+const SETTLE_CRON = "30 8 * * 1-5";
 
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -99,6 +102,17 @@ export default {
   },
 
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
+    if (event.cron !== SETTLE_CRON) {
+      // 장중 데이터 업데이트 트리거 (GitHub update.yml workflow_dispatch)
+      try {
+        const r = await triggerKospiUpdate(env);
+        console.log("[CRON] update trigger:", event.cron, JSON.stringify(r));
+      } catch (err) {
+        console.error("[CRON] update trigger error:", err);
+      }
+      return;
+    }
+
     console.log("[CRON] settlement start:", event.cron, new Date().toISOString());
     try {
       const result = await runSettlement(env);
