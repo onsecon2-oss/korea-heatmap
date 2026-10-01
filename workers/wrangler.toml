@@ -11,7 +11,8 @@ database_id = "1aed5a58-1554-493a-99f1-439553522a94"
 migrations_dir = "migrations"
 
 [triggers]
-crons = ["30 8 * * 1-5"]
+# 30 8 = 17:30 KST 정산 / 5,35 0-6 = KST 09:05~15:35 30분마다 데이터 업데이트 트리거
+crons = ["30 8 * * 1-5", "5,35 0-6 * * 1-5"]
 
 [vars]
 ALLOWED_ORIGINS = "https://koreaheatmap.com,https://korea-heatmap.onsecon.workers.dev"
@@ -32,7 +33,8 @@ database_id = "1aed5a58-1554-493a-99f1-439553522a94"
 migrations_dir = "migrations"
 
 [env.production.triggers]
-crons = ["30 8 * * 1-5"]
+# 30 8 = 17:30 KST 정산 / 5,35 0-6 = KST 09:05~15:35 30분마다 데이터 업데이트 트리거
+crons = ["30 8 * * 1-5", "5,35 0-6 * * 1-5"]
 
 [env.production.vars]
 ALLOWED_ORIGINS = "https://koreaheatmap.com,https://korea-heatmap.onsecon.workers.dev"
