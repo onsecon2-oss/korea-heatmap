@@ -35,3 +35,15 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Sync GH_DISPATCH_TOKEN secret to Worker
+        run: |
+          if [ -z "$GH_DISPATCH_TOKEN" ]; then
+            echo "GH_DISPATCH_TOKEN repo secret not set -- skipping"
+            exit 0
+          fi
+          echo "$GH_DISPATCH_TOKEN" | npx wrangler secret put GH_DISPATCH_TOKEN --env production
+        env:
+          GH_DISPATCH_TOKEN: ${{ secrets.GH_DISPATCH_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
